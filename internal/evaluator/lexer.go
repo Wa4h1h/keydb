@@ -31,7 +31,7 @@ func (l *Lexer) NextToken() *Token {
 	default:
 		switch {
 		case isChar(l.ch):
-			literal := l.readId()
+			literal := l.readID()
 			if _, ok := commands[literal]; ok {
 				token = NewToken(COMMAND, literal)
 			} else if param, ok := parameters[literal]; ok {
@@ -41,15 +41,19 @@ func (l *Lexer) NextToken() *Token {
 			}
 		case isDigit(l.ch):
 			literal, mixedChar := l.readInt()
+
 			var tokenType TokenType
+
 			if mixedChar {
 				tokenType = ID
 			} else {
 				tokenType = INT
 			}
+
 			if l.lastToken.Literal == TTL {
 				tokenType = TTL
 			}
+
 			token = NewToken(tokenType, literal)
 		default:
 			token = NewToken(ILLEGAL, string(l.ch))
@@ -69,21 +73,22 @@ func (l *Lexer) readChar() {
 	} else {
 		l.ch = l.input[l.readPosition]
 	}
+
 	l.position = l.readPosition
+
 	l.readPosition += 1
 }
 
 func (l *Lexer) readList() string {
-	position := l.position
-
 	for {
 		l.readChar()
+
 		if l.ch == ']' {
 			break
 		}
 	}
 
-	return l.input[position:l.readPosition]
+	return l.input[l.position:l.readPosition]
 }
 
 func isChar(ch byte) bool {
@@ -101,12 +106,14 @@ func isWhiteSpace(ch byte) bool {
 func (l *Lexer) readInt() (string, bool) {
 	position := l.position
 	mixed := false
+
 	for isDigit(l.ch) {
 		l.readChar()
 	}
 
 	if isChar(l.ch) {
 		mixed = true
+
 		for isChar(l.ch) || isDigit(l.ch) {
 			l.readChar()
 		}
@@ -115,7 +122,7 @@ func (l *Lexer) readInt() (string, bool) {
 	return l.input[position:l.position], mixed
 }
 
-func (l *Lexer) readId() string {
+func (l *Lexer) readID() string {
 	position := l.position
 
 	for isChar(l.ch) || isDigit(l.ch) {
@@ -127,12 +134,15 @@ func (l *Lexer) readId() string {
 
 func (l *Lexer) readString() string {
 	position := l.readPosition
+
 	var str string
 
 	for {
 		l.readChar()
+
 		if l.ch == '"' {
 			str = l.input[position:l.position]
+
 			break
 		}
 	}
@@ -150,7 +160,7 @@ func (l *Lexer) stepBack() {
 	if l.readPosition > 0 && l.position > 0 {
 		l.ch = l.input[l.position]
 		l.readPosition = l.position
-		l.position -= 1
+		l.position--
 	}
 }
 

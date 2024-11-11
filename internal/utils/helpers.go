@@ -19,6 +19,12 @@ func ParseStringToSlice(str string) ([]string, error) {
 	return strings.Split(elements, ","), nil
 }
 
+func StringIsSlice(str string) bool {
+	return len(str) >= 3 &&
+		(str[0] == '[') &&
+		(str[len(str)-1] == ']')
+}
+
 func ParseSliceToString(slice []string) string {
 	str := strings.Join(slice, ",")
 

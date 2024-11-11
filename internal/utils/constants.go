@@ -1,14 +1,11 @@
 package utils
 
+type Identifier string
+
 const (
-	StringIdentifier = "+"
-	ErrorIdentifier  = "-"
-	Set              = "SET"
-	Get              = "GET"
-	Inc              = "INC"
-	Dec              = "DEC"
-	Negate           = "NEGATE"
-	Remove           = "REMOVE"
-	Lappend          = "LAPPEND"
-	Lremove          = "LREMOVE"
+	StringIdentifier  Identifier = "+"
+	IntegerIdentifier Identifier = ":"
+	BooleanIdentifier Identifier = "#"
+	ListIdentifier    Identifier = "*"
+	ErrorIdentifier   Identifier = "-"
 )
