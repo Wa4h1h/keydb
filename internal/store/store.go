@@ -2,6 +2,7 @@ package store
 
 import (
 	"sync"
+	"time"
 
 	"github.com/Wa4h1h/memdb/internal/utils"
 )
@@ -13,31 +14,36 @@ type Store interface {
 }
 
 type Item struct {
-	Value string
-	TTL   int64
+	TTL       int64
+	Value     string
+	CreatedAt time.Time
 }
 
 type MemStore struct {
 	Ms map[string]*Item
-	m  sync.RWMutex
+	sync.RWMutex
 }
 
 func NewMemStore() *MemStore {
-	return &MemStore{Ms: make(map[string]*Item)}
+	ms := &MemStore{Ms: make(map[string]*Item)}
+
+	go ms.BackgroundTTLWorker()
+
+	return ms
 }
 
-func (d *MemStore) AddItem(key string, item *Item) {
-	d.m.Lock()
-	defer d.m.Unlock()
+func (ms *MemStore) AddItem(key string, item *Item) {
+	ms.Lock()
+	defer ms.Unlock()
 
-	d.Ms[key] = item
+	ms.Ms[key] = item
 }
 
-func (d *MemStore) GetItem(key string) (*Item, error) {
-	d.m.RLock()
-	defer d.m.RUnlock()
+func (ms *MemStore) GetItem(key string) (*Item, error) {
+	ms.RLock()
+	defer ms.RUnlock()
 
-	val, ok := d.Ms[key]
+	val, ok := ms.Ms[key]
 	if !ok {
 		return nil, utils.ErrNotFoundItem
 	}
@@ -45,16 +51,31 @@ func (d *MemStore) GetItem(key string) (*Item, error) {
 	return val, nil
 }
 
-func (d *MemStore) DeleteItem(key string) (string, error) {
-	d.m.Lock()
-	defer d.m.Unlock()
+func (ms *MemStore) DeleteItem(key string) (string, error) {
+	ms.Lock()
+	defer ms.Unlock()
 
-	delete(d.Ms, key)
+	delete(ms.Ms, key)
 
-	_, ok := d.Ms[key]
-	if !ok || len(d.Ms) == 0 {
+	_, ok := ms.Ms[key]
+	if !ok || len(ms.Ms) == 0 {
 		return "", utils.ErrItemNotRemoved
 	}
 
 	return "OK\n", nil
+}
+
+func (ms *MemStore) BackgroundTTLWorker() {
+	ms.Lock()
+	defer ms.Unlock()
+
+	for key, value := range ms.Ms {
+		diff := value.CreatedAt.
+			Add(time.Duration(value.TTL) * time.Second).
+			Sub(time.Now())
+
+		if diff < 0 {
+			delete(ms.Ms, key)
+		}
+	}
 }

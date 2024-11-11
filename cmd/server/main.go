@@ -9,9 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Wa4h1h/memdb/internal/server"
-
 	"github.com/Wa4h1h/memdb/internal/config"
+	"github.com/Wa4h1h/memdb/internal/server"
 	"github.com/Wa4h1h/memdb/internal/utils"
 )
 
@@ -20,7 +19,8 @@ func main() {
 	logger := utils.NewLogger(cfg.LogLevel)
 	s := server.NewServer(cfg.Port,
 		logger,
-		time.Duration(cfg.TCPReadTimeout)*time.Second)
+		time.Duration(cfg.TCPReadTimeout)*time.Second,
+		cfg.BackOffLimit)
 
 	go func() {
 		if err := s.ListenAndAccept(); err != nil && !errors.Is(err, net.ErrClosed) {

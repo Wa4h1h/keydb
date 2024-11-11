@@ -7,7 +7,7 @@ import (
 )
 
 type Env interface {
-	uint | string | bool
+	uint | string | bool | int
 }
 
 func GetEnv[T Env](defaultValue string, required bool, key string) T {
@@ -39,6 +39,13 @@ func GetEnv[T Env](defaultValue string, required bool, key string) T {
 		}
 
 		*ptr = uint(tmp)
+	case *int:
+		tmp, err := strconv.ParseInt(envVal, 10, 64)
+		if err != nil {
+			panic(fmt.Sprintf("can not parse evn variable to int %s=%s", key, envVal))
+		}
+
+		*ptr = int(tmp)
 	}
 
 	return val

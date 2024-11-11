@@ -1,2 +1,4 @@
 # memdb
-a minimalist key/value store implemented in Go
+a minimalistic key/value store implemented in Go.
+
+

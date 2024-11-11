@@ -3,8 +3,9 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/Wa4h1h/memdb/internal/evaluator"
 	"net"
+
+	"github.com/Wa4h1h/memdb/internal/evaluator"
 
 	"github.com/Wa4h1h/memdb/internal/utils"
 )

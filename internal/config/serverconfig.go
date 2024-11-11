@@ -6,6 +6,7 @@ type ServerConfig struct {
 	Port           string
 	LogLevel       string
 	TCPReadTimeout uint
+	BackOffLimit   int
 }
 
 func LoadServerConfig() *ServerConfig {
@@ -13,7 +14,8 @@ func LoadServerConfig() *ServerConfig {
 
 	srvConfig.Port = utils.GetEnv[string]("8000", false, "PORT")
 	srvConfig.LogLevel = utils.GetEnv[string]("debug", false, "LOG_LEVEL")
-	srvConfig.TCPReadTimeout = utils.GetEnv[uint]("1", false, "TCP_READ_TIMEOUT")
+	srvConfig.TCPReadTimeout = utils.GetEnv[uint]("10", false, "TCP_READ_TIMEOUT")
+	srvConfig.BackOffLimit = utils.GetEnv[int]("5", false, "Back_OFF_Limit")
 
 	return srvConfig
 }

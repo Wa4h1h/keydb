@@ -17,16 +17,34 @@ import (
 )
 
 type Server struct {
-	Logger      *zap.Logger
-	evaluator   *evaluator.Evaluator
-	Port        string
-	ReadTimeout time.Duration
-	l           net.Listener
+	Logger           *zap.SugaredLogger
+	evaluator        *evaluator.Evaluator
+	l                net.Listener
+	Port             string
+	ReadTimeout      time.Duration
+	ReadBackOffLimit int
+}
+
+func NewServer(port string,
+	logger *zap.Logger, readTimeout time.Duration,
+	readBackOffLimit int,
+) *Server {
+	s := &Server{
+		Port:             port,
+		Logger:           logger.Sugar().Named("server"),
+		ReadTimeout:      readTimeout,
+		ReadBackOffLimit: readBackOffLimit,
+		evaluator: evaluator.NewEvaluator(store.NewMemStore(),
+			logger.Sugar().Named("evaluator"),
+		),
+	}
+
+	return s
 }
 
 func (s *Server) Close() error {
 	if err := s.l.Close(); err != nil {
-		return fmt.Errorf("error occured while trying to close server: %w", err)
+		return fmt.Errorf("error: close server: %w", err)
 	}
 
 	return nil
@@ -37,7 +55,7 @@ func (s *Server) ListenAndAccept() error {
 
 	s.l, err = net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", s.Port))
 	if err != nil {
-		return fmt.Errorf("failed to start server on port %s: %w", s.Port, err)
+		return fmt.Errorf("error: listen on port %s: %w", s.Port, err)
 	}
 
 	for {
@@ -46,10 +64,10 @@ func (s *Server) ListenAndAccept() error {
 			if !errors.Is(err, net.ErrClosed) {
 				log.Println(err.Error())
 
-				return fmt.Errorf("failed to accept connections: %w", err)
+				continue
 			}
 
-			return nil
+			return fmt.Errorf("error: accept connection: %w", err)
 		}
 
 		go s.handleConn(conn)
@@ -57,29 +75,50 @@ func (s *Server) ListenAndAccept() error {
 }
 
 func (s *Server) handleConn(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			s.Logger.Errorf("error: close remote connection %s: %s",
+				conn.RemoteAddr().String(), err)
+		}
+	}()
 
 	cmdBytes := make([]byte, 0)
+	tries := 0
 
 	for {
-		if err := conn.SetReadDeadline(time.Now().Add(s.ReadTimeout * time.Second)); err != nil {
-			s.Logger.Error(fmt.Sprintf("error while setting read timeout"))
-			s.simpleWrite(conn, "unexpected error")
+		if err := conn.SetReadDeadline(time.Now().Add(s.ReadTimeout)); err != nil {
+			s.Logger.Errorf("error: set read timeout: %s", err)
 
-			return
+			tries++
+
+			if tries >= s.ReadBackOffLimit {
+				s.simpleWrite(conn, "unexpected error")
+
+				return
+			}
+
+			continue
 		}
 
-		readBytes := make([]byte, 50)
+		readBytes := make([]byte, 100)
 
 		n, err := conn.Read(readBytes)
 		if err != nil {
-			if os.IsTimeout(err) {
-				s.simpleWrite(conn, "connection timed out")
-			} else if !errors.Is(err, io.EOF) {
-				s.simpleWrite(conn, "unexpected error")
-			}
+			tries++
 
-			return
+			switch {
+			case os.IsTimeout(err):
+				s.simpleWrite(conn, "connection timed out")
+			case !errors.Is(err, io.EOF):
+				if tries < s.ReadBackOffLimit {
+					continue
+				}
+
+				s.Logger.Errorf("error: read bytes: %s", err)
+				s.simpleWrite(conn, "unexpected error")
+
+				return
+			}
 		}
 
 		if n > 0 {
@@ -87,34 +126,23 @@ func (s *Server) handleConn(conn net.Conn) {
 
 			if slices.Contains(cmdBytes, '\n') {
 				var response string
-				response, err := s.evaluator.Execute(string(cmdBytes))
+
+				response, err := s.evaluator.Evaluate(string(cmdBytes))
 				if err != nil {
 					response = s.checkError(err)
+
 					s.Logger.Debug(response)
 				}
+
 				_, err = conn.Write([]byte(response))
 				if err != nil {
-					s.Logger.Error(fmt.Sprintf("error while writing to conn:%s", err.Error()))
+					s.Logger.Errorf("error: write to conn: %s", err)
 
 					return
 				}
-				cmdBytes = make([]byte, 0)
+
+				cmdBytes = cmdBytes[:0]
 			}
 		}
 	}
-}
-
-func NewServer(port string,
-	logger *zap.Logger, readTimeout time.Duration,
-) *Server {
-	s := &Server{
-		Port:        port,
-		Logger:      logger,
-		ReadTimeout: readTimeout,
-		evaluator: evaluator.NewEvaluator(store.NewMemStore(),
-			logger.Sugar().Named("evaluator"),
-		),
-	}
-
-	return s
 }

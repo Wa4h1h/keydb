@@ -2,8 +2,10 @@ package evaluator
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Wa4h1h/memdb/internal/utils"
 	"go.uber.org/zap"
@@ -27,9 +29,11 @@ func NewEvaluator(s store.Store, l *zap.SugaredLogger) *Evaluator {
 	return &Evaluator{s, l}
 }
 
-func (e *Evaluator) Execute(cmd string) (string, error) {
+func (e *Evaluator) Evaluate(cmd string) (string, error) {
 	lexer := NewLexer(strings.TrimSuffix(cmd, "\n"))
+
 	var tokens []*Token
+
 	for tk := lexer.NextToken(); tk.Literal != EOF; tk = lexer.NextToken() {
 		tokens = append(tokens, tk)
 	}
@@ -80,8 +84,10 @@ func (e *Evaluator) evaluateTokens(tokens []*Token) (*Evaluation, error) {
 			val, err := strconv.ParseInt(token.Literal, 10, 64)
 			if err != nil {
 				e.l.Error(fmt.Sprintf("failed to pares str to int: %s", err.Error()))
+
 				return nil, utils.ErrParsingTTL
 			}
+
 			evaluation.ttl = val
 		default:
 			if i == 1 {
@@ -98,8 +104,9 @@ func (e *Evaluator) evaluateTokens(tokens []*Token) (*Evaluation, error) {
 
 func (e *Evaluator) set(key string, value string, ttl int64) (string, error) {
 	item := &store.Item{
-		Value: value,
-		TTL:   ttl,
+		Value:     value,
+		TTL:       ttl,
+		CreatedAt: time.Now(),
 	}
 
 	e.AddItem(key, item)
@@ -181,6 +188,7 @@ func (e *Evaluator) negate(key string) (string, error) {
 	val, err := strconv.ParseBool(item.Value)
 	if err != nil {
 		e.l.Error(fmt.Sprintf("failed to pares str to bool: %s", err.Error()))
+
 		return "", utils.ErrParsingToBool
 	}
 
@@ -208,19 +216,14 @@ func (e *Evaluator) updateList(key string, value string, command string) (string
 		}
 	case LREMOVE:
 		{
-			targetIndex := -1
-			for i, val := range slice {
-				if val == value {
-					targetIndex = i
-					break
-				}
-			}
 
-			if targetIndex == -1 {
+			itemIndex := slices.Index(slice, value)
+
+			if itemIndex == -1 {
 				return "", utils.ErrElementNotinList
 			}
 
-			slice[targetIndex] = slice[len(slice)-1]
+			slice[itemIndex] = slice[len(slice)-1]
 			item.Value = utils.ParseSliceToString(slice[:len(slice)-1])
 		}
 
