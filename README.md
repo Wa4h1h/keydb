@@ -1,7 +1,7 @@
 # memdb
 a minimalistic key/value store implemented in Go.
 
-**NOTE:** I wrote these libraries for learning purposes. It may not be completely thought out and error free. Use at Your Own Risk.
+**NOTE:** I wrote this project for learning purposes. It may not be completely thought out and error free. Use at Your Own Risk.
 
 ---
 
