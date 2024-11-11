@@ -10,19 +10,17 @@ import (
 	"time"
 
 	"github.com/Wa4h1h/memdb/internal/server"
-	"github.com/Wa4h1h/memdb/pkg"
-)
 
-//nolint:gochecknoglobals
-var (
-	port        = pkg.GetEnv[string]("8000", false, "PORT")
-	logLevel    = pkg.GetEnv[string]("debug", false, "LOG_LEVEL")
-	readTimeout = pkg.GetEnv[uint]("30", false, "READ_TIMEOUT")
+	"github.com/Wa4h1h/memdb/internal/config"
+	"github.com/Wa4h1h/memdb/internal/utils"
 )
 
 func main() {
-	logger := pkg.NewLogger(logLevel)
-	s := server.NewServer(port, logger, time.Duration(readTimeout))
+	cfg := config.LoadServerConfig()
+	logger := utils.NewLogger(cfg.LogLevel)
+	s := server.NewServer(cfg.Port,
+		logger,
+		time.Duration(cfg.TCPReadTimeout)*time.Second)
 
 	go func() {
 		if err := s.ListenAndAccept(); err != nil && !errors.Is(err, net.ErrClosed) {

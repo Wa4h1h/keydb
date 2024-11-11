@@ -1,4 +1,4 @@
-package server
+package evaluator
 
 type TokenType string
 

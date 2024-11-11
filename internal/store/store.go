@@ -3,7 +3,7 @@ package store
 import (
 	"sync"
 
-	"github.com/Wa4h1h/memdb/pkg"
+	"github.com/Wa4h1h/memdb/internal/utils"
 )
 
 type Store interface {
@@ -39,7 +39,7 @@ func (d *MemStore) GetItem(key string) (*Item, error) {
 
 	val, ok := d.Ms[key]
 	if !ok {
-		return nil, pkg.ErrNotFoundItem
+		return nil, utils.ErrNotFoundItem
 	}
 
 	return val, nil
@@ -53,7 +53,7 @@ func (d *MemStore) DeleteItem(key string) (string, error) {
 
 	_, ok := d.Ms[key]
 	if !ok || len(d.Ms) == 0 {
-		return "", pkg.ErrItemNotRemoved
+		return "", utils.ErrItemNotRemoved
 	}
 
 	return "OK\n", nil

@@ -1,10 +1,10 @@
-package server
+package evaluator
 
 type Lexer struct {
+	lastToken    *Token
 	input        string
 	ch           byte
 	readPosition int
-	lastToken    *Token
 	position     int
 }
 

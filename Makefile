@@ -8,7 +8,4 @@ local-deploy: build
 	docker-compose up
 
 build:
-	GOOS=linux GOARCH=amd64 go build -o ./build/main ./cmd/dbserver/main.go
-
-clean:
-	rm ./build/main
+	go build -o ./build/main ./cmd/server/main.go
