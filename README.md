@@ -9,7 +9,7 @@ inspired by redis, this project provides a key/value data store intended to hold
 !!! No intended to be used for large data storage !!!
 
 ### How it works
-A tcp server listening and accepting connection on port 8000 per default. The client can send a variety of command the follows this pattern
+A tcp server listening and accepting connection on port 8000 per default. The client can send a variety of command that follows this pattern
 ```
   COMMAND KEY VALUE TTL VALUE
 ```
@@ -23,7 +23,7 @@ Available commands:
 * LAPPEND key value\n
 * LREMOVE key value\n
 
-Responses follows this pattern:
+Responses follow this pattern:
 ```
 Type Length\r\n
 value
@@ -56,7 +56,7 @@ Ok
 ```
 ###### GET command for list type
 ```bash
-*15
+*16
 [2,3,4,[test,5,7]]
 ```
 ### Install
