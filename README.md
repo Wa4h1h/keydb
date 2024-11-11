@@ -28,11 +28,11 @@ Responses follows this pattern:
 Type Length\r\n
 value
 ```
-Response types are special characters identifiers:
-    + string
-    : integer
-    # boolean
-    * list
+Response types are special characters identifiers:<br>
+    + string<br>
+    : integer<br>
+    # boolean<br>
+    * list<br>
     - error
 
 value can be a string, integer, boolean or a list
