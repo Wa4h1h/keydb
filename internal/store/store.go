@@ -25,7 +25,7 @@ type MemStore struct {
 	sync.RWMutex
 }
 
-func NewMemStore(ttlBackgroundWorkerInterval int) *MemStore {
+func NewMemStore(ttlBackgroundWorkerInterval int) Store {
 	ms := &MemStore{
 		Ms:                          make(map[string]*Item),
 		ttlBackgroundWorkerInterval: ttlBackgroundWorkerInterval,
@@ -62,7 +62,7 @@ func (ms *MemStore) DeleteItem(key string) (string, error) {
 	delete(ms.Ms, key)
 
 	_, ok := ms.Ms[key]
-	if !ok || len(ms.Ms) == 0 {
+	if ok {
 		return "", utils.ErrItemNotRemoved
 	}
 

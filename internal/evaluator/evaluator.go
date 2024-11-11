@@ -139,12 +139,15 @@ func (e *Evaluator) remove(key string) (string, error) {
 
 func (e *Evaluator) updateIntValue(key string, value string, command string) (string, error) {
 	var val int64 = 1
+
 	if len(value) > 0 {
 		parsedValue, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			e.l.Error(fmt.Sprintf("failed to pares str to int: %s", err.Error()))
+
 			return "", utils.ErrParsingToInt
 		}
+
 		val = parsedValue
 	}
 
@@ -156,6 +159,7 @@ func (e *Evaluator) updateIntValue(key string, value string, command string) (st
 	itemValue, err := strconv.ParseInt(item.Value, 10, 64)
 	if err != nil {
 		e.l.Error(fmt.Sprintf("failed to pares str to int: %s", err.Error()))
+
 		return "", utils.ErrParsingToInt
 	}
 
@@ -216,7 +220,6 @@ func (e *Evaluator) updateList(key string, value string, command string) (string
 		}
 	case LREMOVE:
 		{
-
 			itemIndex := slices.Index(slice, value)
 
 			if itemIndex == -1 {
