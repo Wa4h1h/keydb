@@ -1,5 +1,7 @@
 package evaluator
 
+import "strings"
+
 type Lexer struct {
 	lastToken    *Token
 	input        string
@@ -80,15 +82,25 @@ func (l *Lexer) readChar() {
 }
 
 func (l *Lexer) readList() string {
+	var list strings.Builder
+
 	for {
+		list.WriteString(string(l.ch))
+
 		l.readChar()
 
+		if l.ch == '[' {
+			list.WriteString(l.readList())
+		}
+
 		if l.ch == ']' {
+			list.WriteString(string(l.ch))
+
 			break
 		}
 	}
 
-	return l.input[l.position:l.readPosition]
+	return list.String()
 }
 
 func isChar(ch byte) bool {
