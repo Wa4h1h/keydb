@@ -61,7 +61,7 @@ Ok
 ```
 ### Install
 ```bash
-go install github.com/Wa4h1h/memdb/cmd/server@latest
+go install github.com/Wa4h1h/memdb/cmd/keydb@latest
 ```
 ---
 

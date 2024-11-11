@@ -35,7 +35,7 @@ func main() {
 			panic(err.Error())
 		}
 
-		logger.Info("server closed")
+		logger.Info("keydb closed")
 	}(s)
 
 	// listen shutdown signal
