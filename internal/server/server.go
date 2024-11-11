@@ -28,13 +28,14 @@ type Server struct {
 func NewServer(port string,
 	logger *zap.Logger, readTimeout time.Duration,
 	readBackOffLimit int,
+	ttlBackgroundWorkerInterval int,
 ) *Server {
 	s := &Server{
 		Port:             port,
 		Logger:           logger.Sugar().Named("server"),
 		ReadTimeout:      readTimeout,
 		ReadBackOffLimit: readBackOffLimit,
-		evaluator: evaluator.NewEvaluator(store.NewMemStore(),
+		evaluator: evaluator.NewEvaluator(store.NewMemStore(ttlBackgroundWorkerInterval),
 			logger.Sugar().Named("evaluator"),
 		),
 	}
@@ -119,6 +120,8 @@ func (s *Server) handleConn(conn net.Conn) {
 
 				return
 			}
+
+			return
 		}
 
 		if n > 0 {

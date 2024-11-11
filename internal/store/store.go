@@ -15,17 +15,21 @@ type Store interface {
 
 type Item struct {
 	TTL       int64
-	Value     string
 	CreatedAt time.Time
+	Value     string
 }
 
 type MemStore struct {
-	Ms map[string]*Item
+	Ms                          map[string]*Item
+	ttlBackgroundWorkerInterval int
 	sync.RWMutex
 }
 
-func NewMemStore() *MemStore {
-	ms := &MemStore{Ms: make(map[string]*Item)}
+func NewMemStore(ttlBackgroundWorkerInterval int) *MemStore {
+	ms := &MemStore{
+		Ms:                          make(map[string]*Item),
+		ttlBackgroundWorkerInterval: ttlBackgroundWorkerInterval,
+	}
 
 	go ms.BackgroundTTLWorker()
 
@@ -66,16 +70,21 @@ func (ms *MemStore) DeleteItem(key string) (string, error) {
 }
 
 func (ms *MemStore) BackgroundTTLWorker() {
-	ms.Lock()
-	defer ms.Unlock()
+	for {
+		ms.Lock()
 
-	for key, value := range ms.Ms {
-		diff := value.CreatedAt.
-			Add(time.Duration(value.TTL) * time.Second).
-			Sub(time.Now())
+		for key, value := range ms.Ms {
+			diff := value.CreatedAt.
+				Add(time.Duration(value.TTL) * time.Second).
+				Sub(time.Now())
 
-		if diff < 0 {
-			delete(ms.Ms, key)
+			if diff < 0 {
+				delete(ms.Ms, key)
+			}
 		}
+
+		ms.Unlock()
+
+		time.Sleep(time.Duration(ms.ttlBackgroundWorkerInterval) * time.Minute)
 	}
 }

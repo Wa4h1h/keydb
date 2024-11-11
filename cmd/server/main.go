@@ -20,7 +20,8 @@ func main() {
 	s := server.NewServer(cfg.Port,
 		logger,
 		time.Duration(cfg.TCPReadTimeout)*time.Second,
-		cfg.BackOffLimit)
+		cfg.BackOffLimit,
+		cfg.TTLBackgroundWorkerInterval)
 
 	go func() {
 		if err := s.ListenAndAccept(); err != nil && !errors.Is(err, net.ErrClosed) {
