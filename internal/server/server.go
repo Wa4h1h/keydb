@@ -10,9 +10,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Wa4h1h/memdb/internal/evaluator"
+	"github.com/Wa4h1h/keydb/internal/evaluator"
 
-	"github.com/Wa4h1h/memdb/internal/store"
+	"github.com/Wa4h1h/keydb/internal/store"
 	"go.uber.org/zap"
 )
 

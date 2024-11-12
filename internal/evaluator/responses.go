@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Wa4h1h/memdb/internal/utils"
+	"github.com/Wa4h1h/keydb/internal/utils"
 )
 
 func FormatString(value string) string {

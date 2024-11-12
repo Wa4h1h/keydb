@@ -1,6 +1,6 @@
 package config
 
-import "github.com/Wa4h1h/memdb/internal/utils"
+import "github.com/Wa4h1h/keydb/internal/utils"
 
 type ServerConfig struct {
 	Port                        string

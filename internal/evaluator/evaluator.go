@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Wa4h1h/memdb/internal/utils"
+	"github.com/Wa4h1h/keydb/internal/utils"
 	"go.uber.org/zap"
 
-	"github.com/Wa4h1h/memdb/internal/store"
+	"github.com/Wa4h1h/keydb/internal/store"
 )
 
 type Evaluation struct {

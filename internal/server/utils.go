@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Wa4h1h/memdb/internal/evaluator"
+	"github.com/Wa4h1h/keydb/internal/evaluator"
 
-	"github.com/Wa4h1h/memdb/internal/utils"
+	"github.com/Wa4h1h/keydb/internal/utils"
 )
 
 func (s *Server) simpleWrite(conn net.Conn, msg string) {

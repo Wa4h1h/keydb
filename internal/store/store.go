@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Wa4h1h/memdb/internal/utils"
+	"github.com/Wa4h1h/keydb/internal/utils"
 )
 
 type Store interface {
